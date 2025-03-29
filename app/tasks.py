@@ -9,8 +9,8 @@ from app.db.session import SyncSessionLocal
 from app.services.ai_analyzer import analyze_text
 
 
-@shared_task
-def process_notification(notification_id: str, text: str):
+@shared_task  # type: ignore
+def process_notification(notification_id: str, text: str) -> None:
     db: Session = SyncSessionLocal()
 
     try:
@@ -23,8 +23,8 @@ def process_notification(notification_id: str, text: str):
 
         result = asyncio.run(analyze_text(text))
 
-        notif.category = result["category"]
-        notif.confidence = result["confidence"]
+        notif.category = result["category"]  # type: ignore
+        notif.confidence = result["confidence"]  # type: ignore
         notif.processing_status = "completed"
         db.commit()
 

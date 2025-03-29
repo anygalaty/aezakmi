@@ -2,7 +2,7 @@ import asyncio
 import random
 
 
-async def analyze_text(text: str) -> dict:
+async def analyze_text(text: str) -> dict[str, object]:
     await asyncio.sleep(random.uniform(1, 3))
 
     text_lower = text.lower()

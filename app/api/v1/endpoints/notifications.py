@@ -1,10 +1,13 @@
 import json
+from collections.abc import Sequence
+from typing import cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.redis import redis_client
+from app.db.models.notification import Notification
 from app.db.session import get_db
 from app.schemas.notification import NotificationCreate, NotificationRead
 from app.services.notification_service import (
@@ -20,16 +23,16 @@ CACHE_TTL = 60
 
 
 @router.post("/", response_model=NotificationRead)
-async def create(data: NotificationCreate, db: AsyncSession = Depends(get_db)):
+async def create(data: NotificationCreate, db: AsyncSession = Depends(get_db)) -> Notification:
     return await create_notification(db, data)
 
 
 @router.get("/", response_model=list[NotificationRead])
-async def list_all(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
+async def list_all(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)) -> Sequence[Notification]:
     if skip == 0 and limit == 10:
         cached = await redis_client.get(CACHE_KEY)
         if cached:
-            return json.loads(cached)
+            return cast(Sequence[Notification], json.loads(cached))
 
     notifs = await get_notifications(db, skip, limit)
 
@@ -44,18 +47,18 @@ async def list_all(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(ge
 
 
 @router.get("/{notification_id}", response_model=NotificationRead)
-async def get_one(notification_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_one(notification_id: UUID, db: AsyncSession = Depends(get_db)) -> Notification | None:
     notif = await get_notification(db, notification_id)
     return notif
 
 
 @router.post("/{notification_id}/read", response_model=NotificationRead)
-async def mark_read(notification_id: UUID, db: AsyncSession = Depends(get_db)):
+async def mark_read(notification_id: UUID, db: AsyncSession = Depends(get_db)) -> Notification | None:
     notif = await mark_as_read(db, notification_id)
     return notif
 
 
 @router.get("/{notification_id}/status")
-async def get_status(notification_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_status(notification_id: UUID, db: AsyncSession = Depends(get_db)) -> dict[str, None | str]:
     notif = await get_notification(db, notification_id)
-    return {"status": notif.processing_status}
+    return {"status": notif.processing_status if notif else None}
