@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "aezakmi"
+version = "0.1.0"
+description = "Notification service integrated with AI model"
+authors = ["Andrey Yashinin <dron8052@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.12"
+uvicorn = "^0.34.0"
+sqlalchemy = "^2.0.40"
+pydantic = "^2.11.0"
+redis = "^5.2.1"
+celery = "^5.4.0"
+psycopg2-binary = "^2.9.10"
+pydantic-settings = "^2.8.1"
+asyncpg = "^0.30.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+httpx = "^0.28.1"
+pytest-asyncio = "^0.26.0"
+alembic = "^1.15.2"
+mypy = "^1.15.0"
+ruff = "^0.11.2"
+poethepoet = "^0.33.1"
+
+[tool.mypy]
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+ignore_missing_imports = true
+strict = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+exclude = "alembic/"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+exclude = ["alembic"]
+
+[tool.poe.tasks]
+ruff = "ruff check app tests"
+ruff_fix = "ruff check app tests --fix"
+mypy = "mypy app"
+pytest = "pytest tests"
+
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC"]
+fixable = ["ALL"]
+extend-ignore = ["B008"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
